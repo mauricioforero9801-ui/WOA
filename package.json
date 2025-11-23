@@ -8,10 +8,14 @@
     "dev": "node index.js"
   },
   "dependencies": {
+    "@discordjs/rest": "^2.6.0",
     "axios": "^1.13.2",
     "cron": "^3.5.0",
+    "discord-api-types": "^0.38.34",
     "discord.js": "^14.14.1",
-    "moment-timezone": "^0.5.48"
+    "dotenv": "^17.2.3",
+    "moment-timezone": "^0.5.48",
+    "uuid": "^13.0.0"
   },
   "keywords": [
     "albion",

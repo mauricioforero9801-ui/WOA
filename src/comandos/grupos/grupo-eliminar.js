@@ -1,34 +1,28 @@
-const { SlashCommandBuilder } = require('discord.js');
-const sistemaGrupos = require('../../servicios/sistemaGrupos.js');
+const { SlashCommandBuilder } = require("discord.js");
+const { cerrarPanel } = require("../../../servicios/manejadorJSON");
 
 module.exports = {
     data: new SlashCommandBuilder()
-        .setName('grupo')
-        .setDescription('Comandos de gestión de grupos')
-        .addSubcommand(subcommand =>
-            subcommand
-                .setName('eliminar')
-                .setDescription('Eliminar un grupo existente')
-                .addStringOption(option =>
-                    option.setName('grupo_id')
-                        .setDescription('ID del grupo a eliminar')
-                        .setRequired(true))
+        .setName("grupo_eliminar")
+        .setDescription("Eliminar un grupo creado.")
+        .addStringOption(op =>
+            op.setName("id")
+                .setDescription("ID del grupo")
+                .setRequired(true)
         ),
-    
+
     async execute(interaction) {
-        const grupoId = interaction.options.getString('grupo_id');
-        const exito = await sistemaGrupos.eliminarGrupo(grupoId, interaction.user.id);
-        
-        if (exito) {
-            await interaction.reply({ 
-                content: '✅ Grupo eliminado exitosamente', 
-                ephemeral: true 
-            });
-        } else {
-            await interaction.reply({ 
-                content: '❌ Error: Grupo no encontrado o no tienes permisos', 
-                ephemeral: true 
+        const id = interaction.options.getString("id");
+
+        const exito = cerrarPanel("grupos", id);
+
+        if (!exito) {
+            return interaction.reply({
+                content: "❌ No existe un grupo con ese ID.",
+                ephemeral: true
             });
         }
+
+        return interaction.reply(`🗑️ Grupo **${id}** eliminado correctamente.`);
     }
 };

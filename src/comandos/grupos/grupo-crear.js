@@ -1,68 +1,48 @@
-const { SlashCommandBuilder, ActionRowBuilder, ButtonBuilder, ButtonStyle } = require('discord.js');
-const { EmbedBuilder } = require('discord.js');
-const sistemaGrupos = require('../../servicios/sistemaGrupos.js');
+const { SlashCommandBuilder, EmbedBuilder } = require("discord.js");
+const { generarID, crearPanel } = require("../../../servicios/manejadorJSON");
 
 module.exports = {
     data: new SlashCommandBuilder()
-        .setName('grupo')
-        .setDescription('Crear un nuevo grupo para actividades de Albion Online')
-        .addSubcommand(subcommand =>
-            subcommand
-                .setName('crear')
-                .setDescription('Crear un nuevo grupo')
-                .addStringOption(option =>
-                    option.setName('actividad')
-                        .setDescription('Tipo de actividad')
-                        .setRequired(true)
-                        .addChoices(
-                            { name: 'ZvZ 50v50', value: 'zvz_50' },
-                            { name: 'ZvZ 80v80', value: 'zvz_80' },
-                            { name: 'ZvZ 120v120', value: 'zvz_120' },
-                            { name: 'ZvZ 180v180', value: 'zvz_180' },
-                            { name: 'GVG', value: 'gvg' },
-                            { name: 'HCE Nivel 1-10', value: 'hce_1_10' },
-                            { name: 'HCE Nivel 11-18', value: 'hce_11_18' },
-                            { name: 'Mazmorra Avaloniana', value: 'mazmorra_avalonian' }
-                        ))
-                .addStringOption(option =>
-                    option.setName('fecha')
-                        .setDescription('Fecha del evento (DD/MM/YYYY)')
-                        .setRequired(true))
-                .addStringOption(option =>
-                    option.setName('hora')
-                        .setDescription('Hora del evento (HH:MM)')
-                        .setRequired(true))
-                .addStringOption(option =>
-                    option.setName('descripcion')
-                        .setDescription('Descripción adicional del grupo'))
+        .setName("grupo_crear")
+        .setDescription("Crear un grupo avanzado para Albion Online.")
+        .addStringOption(op =>
+            op.setName("actividad")
+                .setDescription("Actividad (ZvZ, HCE, Mazmorra, Facción, Gank, etc.)")
+                .setRequired(true)
+        )
+        .addIntegerOption(op =>
+            op.setName("limite")
+                .setDescription("Límite máximo de jugadores.")
+                .setRequired(true)
         ),
-    
-    async execute(interaction) {
-        const actividad = interaction.options.getString('actividad');
-        const fecha = interaction.options.getString('fecha');
-        const hora = interaction.options.getString('hora');
-        const descripcion = interaction.options.getString('descripcion') || 'Sin descripción adicional';
 
-        const grupoId = await sistemaGrupos.crearGrupo({
+    async execute(interaction, client) {
+        const actividad = interaction.options.getString("actividad");
+        const limite = interaction.options.getInteger("limite");
+
+        const grupoID = generarID("GRP");
+
+        const grupo = crearPanel("grupos", grupoID, {
+            id: grupoID,
             actividad,
-            fecha,
-            hora,
-            descripcion,
-            lider: interaction.user.id,
-            canalId: interaction.channel.id
+            limite,
+            creador: interaction.user.id,
+            inscritos: [],
+            estado: "abierto",
+            creadoEn: Date.now()
         });
 
-        const embed = sistemaGrupos.crearEmbedGrupo(grupoId);
-        const botones = sistemaGrupos.crearBotonesInscripcion(grupoId);
+        const embed = new EmbedBuilder()
+            .setTitle(`📌 Grupo creado: ${actividad}`)
+            .setColor(client.config.colores.albion)
+            .addFields(
+                { name: "ID del grupo", value: grupoID, inline: true },
+                { name: "Límite de jugadores", value: `${limite}`, inline: true },
+                { name: "Estado", value: "🟢 Abierto", inline: true }
+            )
+            .setFooter({ text: "WorldOfAlbionBot — Sistema de grupos PRO" })
+            .setTimestamp();
 
-        await interaction.reply({ 
-            content: `✅ Grupo **${actividad}** creado exitosamente!`, 
-            ephemeral: true 
-        });
-
-        await interaction.channel.send({ 
-            embeds: [embed], 
-            components: botones 
-        });
+        return interaction.reply({ embeds: [embed] });
     }
 };

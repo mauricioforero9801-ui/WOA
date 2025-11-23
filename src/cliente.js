@@ -11,7 +11,6 @@ class ClienteWorldOfAlbion extends Client {
                 GatewayIntentBits.GuildMembers
             ]
         });
-
         this.comandos = new Collection();
         this.grupos = new Map();
         this.plantillas = new Map();
